@@ -9,14 +9,37 @@ final class GraphApiService {
         drop = droplet
     }
 
-
-    func authenticate(userId facebookUserId:String, token facebookToken:String) throws {
-        let graphResponse = try drop.client.get("https://graph.facebook.com/debug_token", query: [
-            "input_token": facebookToken,
-            "access_token": drop.accessToken()
-            ])
-        print(graphResponse)
+    func userProfile(userId facebookUserId: Int, token facebookToken: String)
+        -> FacebookProfileResponse? {
+        do {
+            let graphResponse = try drop.client.get("https://graph.facebook.com/\(facebookUserId)",
+                query: [ "input_token": facebookToken,
+                         "access_token": drop.accessToken() ])
+            if let response = graphResponse.json?.object { return FacebookProfileResponse(response) }
+                else { return nil }
+        } catch {
+            return nil
+        }
     }
+
+    func authenticate(userId facebookUserId: Int, token facebookToken: String)
+        -> FacebookAuthenticationResponse? {
+        do {
+            let graphResponse = try drop.client.get("https://graph.facebook.com/debug_token", query: [
+                "input_token": facebookToken,
+                "access_token": drop.accessToken()
+                ])
+            if let response = graphResponse.json?.object?["data"]?.object { return FacebookAuthenticationResponse(response) }
+                else { return nil }
+        } catch {
+            return nil
+        }
+    }
+    
+    /*func friendsList(userId facebookUserID: String token facebookToken: String)
+        -> [String: JSON]? {
+        
+     }*/
 }
 
 extension Droplet {
