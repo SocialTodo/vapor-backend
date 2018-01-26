@@ -65,3 +65,28 @@ extension FacebookUser: Preparation {
         try database.delete(self)
     }
 }
+
+extension FacebookUser: JSONInitializable {
+    convenience init(json: JSON) throws {
+        try self.init(userId: json.get("userId"),
+                      token: json.get("token"),
+                      name: json.get("name"))
+    }
+}
+
+extension FacebookUser: JSONRepresentable {
+    func makeJSON() throws -> JSON {
+        var json = JSON()
+        try json.set("userId", facebookUserId)
+        try json.set("token", facebookToken)
+        try json.set("name", name)
+        return json
+    }
+}
+
+extension FacebookUser: ResponseRepresentable { }
+
+
+
+
+
