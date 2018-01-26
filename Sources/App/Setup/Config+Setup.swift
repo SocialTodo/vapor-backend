@@ -1,4 +1,5 @@
 import FluentProvider
+import AuthProvider
 
 extension Config {
     public func setup() throws {
@@ -13,12 +14,14 @@ extension Config {
     /// Configure providers
     private func setupProviders() throws {
         try addProvider(FluentProvider.Provider.self)
+        try addProvider(AuthProvider.Provider.self)
     }
     
     /// Add all models that should have their
     /// schemas prepared before the app boots
     private func setupPreparations() throws {
         preparations.append(FacebookUser.self)
+        preparations.append(FacebookToken.self)
         let pivotTable = Pivot<FacebookUser,FacebookUser>.self
         pivotTable.rightIdKey = "facebookUserId"
         pivotTable.leftIdKey = "facebookFriendId"

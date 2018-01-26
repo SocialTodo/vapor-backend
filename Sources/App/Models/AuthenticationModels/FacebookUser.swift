@@ -1,5 +1,6 @@
 import Vapor
 import FluentProvider
+import AuthProvider
 import HTTP
 
 final class FacebookUser: Model {
@@ -48,7 +49,18 @@ final class FacebookUser: Model {
         try row.set(Keys.facebookUserId, facebookUserId)
         return row
     }
+}
 
+extension FacebookUser {
+    func didCreate() {
+        guard let userId = self.id else {
+            print("id error when creating token")
+            return
+        }
+        let token = FacebookToken(token: facebookToken, userId: userId)
+        try! token.save()
+       
+    }
 }
 
 extension FacebookUser: Preparation {
@@ -86,7 +98,14 @@ extension FacebookUser: JSONRepresentable {
 
 extension FacebookUser: ResponseRepresentable { }
 
+extension FacebookUser: TokenAuthenticatable {
+    public typealias TokenType = FacebookToken
+}
 
-
+extension Request {
+    func user() throws -> FacebookUser {
+        return try auth.assertAuthenticated()
+    }
+}
 
 
