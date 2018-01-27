@@ -69,13 +69,14 @@ extension FacebookUser: Preparation {
 
 extension FacebookUser: NodeConvertible {
     convenience init(node: Node) throws {
-        id = Identifier(node[Keys.id]!.wrapped)
-        name = node[Keys.name]!.string!
-        facebookUserId = node[Keys.facebookUserId]!.int!
-        facebookToken = node[Keys.facebookToken]!.string!
+            self.init(
+                userId: node[Keys.facebookUserId]!.int!,
+                token: node[Keys.facebookToken]!.string!,
+                name: node[Keys.name]!.string!
+            )
     }
 
-    func makeNode(in context: Context?) throws -> Node {
+    func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
             [
                 Keys.id: id,

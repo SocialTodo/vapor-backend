@@ -19,10 +19,10 @@ final class TodoItem: Model {
         static let parentListId = TodoList.foreignIdKey
     }
 
-    init(title:String, checked:Bool = false, parentList: TodoList) {
+    init(title:String, checked:Bool = false, parentListId: Int) {
         self.title = title
         self.checked = checked
-        self.parentListId = parentList.id!
+        self.parentListId = Identifier(parentListId)
     }
 
     init(row: Row) throws {
@@ -57,16 +57,18 @@ extension TodoItem: Preparation {
 
 extension TodoItem: NodeConvertible {
     convenience init(node: Node) throws {
-        id = Identifier(node[Keys.id]!.wrapped)
-        title = node[Keys.title]!.string!
-        checked = node[Keys.checked]!.bool!
-        parentListId = Identifier(node[Keys.parentListId]!.wrapped)
+        self.init(
+            title: node[Keys.title]!.string!,
+            checked: node[Keys.checked]!.bool!,
+            parentListId: node[Keys.parentListId]!.int!
+        )
     }
 
-    func makeNode(in context: Context?) throws -> Node {
+    func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
             [
-                Keys.id: id,
+                //To silence a warning
+                Keys.id: id as Any,
                 Keys.title: title,
                 Keys.checked: checked,
                 Keys.parentListId: parentListId

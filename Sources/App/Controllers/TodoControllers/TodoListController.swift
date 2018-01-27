@@ -2,8 +2,6 @@ import Vapor
 import HTTP
 
 final class TodoListController {
-    typealias Model = TodoList
-    
     let drop: Droplet
     let userController: FacebookUserController
     
@@ -11,27 +9,40 @@ final class TodoListController {
         drop = droplet
         userController = facebookUserController
     }
+}
+
+extension TodoListController: ResourceRepresentable {
+    typealias Model = TodoList
     
-    //Mark: CRUD
-    
-    func getTodoList() -> ResponseRepresentable {
-        
+    private func getResponse(_ req: Request,  _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
+        let apiRequestHeaders = ApiRequestHeaders(req)
+        if let userId = apiRequestHeaders.facebookUserId, let token = apiRequestHeaders.token, let user = try userController.authenticate(userId: Int(truncatingIfNeeded: userId), token: token) {
+            return try query(user)
+        } else {
+            return Response(status: Status.badRequest)
+        }
     }
     
-    func createTodoList() -> ResponseRepresentable {
-        
+    func store(req: Request) throws -> ResponseRepresentable {
+        guard let json = req.json else { return Response(status: Status.badRequest) }
+        let newTodoItem = try TodoList(node: json)
+        try newTodoItem.save()
+        return Response(status: Status.ok)
     }
-    
-    func editTodoList() -> ResponseRepresentable {
-        
-    }
-    
-    func deleteTodoList() -> ResponseRepresentable {
-        
+
+    func show(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
+        return try getResponse(req) { user in
+            return try id.makeNode().converted(to: JSON.self)
+        }
     }
     
     func makeResource() -> Resource<TodoList> {
-        return Resource()
+        return Resource(
+            store: store,
+            show: show
+            //update: update,
+            //destroy: destroy
+        )
     }
 }
 

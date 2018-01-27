@@ -21,10 +21,10 @@ final class TodoList: Model {
         static let shared = "shared"
         static let listOwnerId = FacebookUser.foreignIdKey
     }
-    init(title:String, listOwner: FacebookUser, shared: Bool) {
+    init(title:String, listOwner: Int, shared: Bool) {
         self.title = title
         // Add error handling if the user hasn't been saved yet
-        self.listOwnerId = listOwner.id!
+        self.listOwnerId = Identifier(listOwner)
         self.shared = shared
     }
 
@@ -59,24 +59,18 @@ extension TodoList: Preparation {
 
 extension TodoList: NodeConvertible {
     convenience init(node: Node) throws {
-        id = Identifier(node[Keys.id]!.wrapped)
-        title = node[Keys.title]!.string!
-        listOwnerId = Identifier(node[Keys.listOwnerId]!.wrapped)
-        shared = node[Keys.shared]!.bool!
-    }
-    
-    convenience init(node: Node, in context: Context) throws {
-        //Lots of force unwraps, but If any one of these fails, I think throwing an exception is the best way to handle it.
-        id = Identifier(node[Keys.id]!.wrapped)
-        title = node[Keys.title]!.string!
-        listOwnerId = Identifier(node[Keys.listOwnerId]!.wrapped)
-        shared = node[Keys.shared]!.bool!
+        self.init(
+            title: node[Keys.title]!.string!,
+            listOwner: node[Keys.listOwnerId]!.int!,
+            shared: node[Keys.shared]!.bool!
+        )
     }
 
-    func makeNode(in context: Context?) throws -> Node {
+    func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
             [
-                Keys.id: id,
+                //To silence a warning
+                Keys.id: id as Any,
                 Keys.title: title,
                 Keys.listOwnerId: listOwnerId,
                 Keys.shared: shared
