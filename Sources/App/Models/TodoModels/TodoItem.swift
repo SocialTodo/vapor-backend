@@ -13,6 +13,7 @@ final class TodoItem: Model {
     }
 
     enum Keys {
+        static let id = "id"
         static let title = "title"
         static let checked = "checked"
         static let parentListId = TodoList.foreignIdKey
@@ -51,6 +52,26 @@ extension TodoItem: Preparation {
 
     static func revert(_ database: Database) throws {
         try database.delete(self)
+    }
+}
+
+extension TodoItem: NodeConvertible {
+    convenience init(node: Node) throws {
+        id = Identifier(node[Keys.id]!.wrapped)
+        title = node[Keys.title]!.string!
+        checked = node[Keys.checked]!.bool!
+        parentListId = Identifier(node[Keys.parentListId]!.wrapped)
+    }
+
+    func makeNode(in context: Context?) throws -> Node {
+        return try Node.init(node:
+            [
+                Keys.id: id,
+                Keys.title: title,
+                Keys.checked: checked,
+                Keys.parentListId: parentListId
+            ]
+        )
     }
 }
 

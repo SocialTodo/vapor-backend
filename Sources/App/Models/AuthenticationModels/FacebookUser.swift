@@ -18,6 +18,7 @@ final class FacebookUser: Model {
     }
 
     struct Keys {
+        static let id = "id"
         static let name = "name"
         static let facebookUserId = "facebookUserId"
         static let facebookToken = "facebookToken"
@@ -63,6 +64,26 @@ extension FacebookUser: Preparation {
 
     static func revert(_ database: Database) throws {
         try database.delete(self)
+    }
+}
+
+extension FacebookUser: NodeConvertible {
+    convenience init(node: Node) throws {
+        id = Identifier(node[Keys.id]!.wrapped)
+        name = node[Keys.name]!.string!
+        facebookUserId = node[Keys.facebookUserId]!.int!
+        facebookToken = node[Keys.facebookToken]!.string!
+    }
+
+    func makeNode(in context: Context?) throws -> Node {
+        return try Node.init(node:
+            [
+                Keys.id: id,
+                Keys.name: name,
+                Keys.facebookUserId: facebookUserId,
+                Keys.facebookToken: facebookToken
+            ]
+        )
     }
 }
 
