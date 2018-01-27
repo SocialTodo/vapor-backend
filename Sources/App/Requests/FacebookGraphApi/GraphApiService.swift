@@ -22,7 +22,7 @@ final class GraphApiService {
         }
     }
 
-    func authenticate(userId facebookUserId: Int, token facebookToken: String)
+    func authenticate(token facebookToken: String)
         -> FacebookAuthenticationResponse? {
         do {
             let graphResponse = try drop.client.get("https://graph.facebook.com/debug_token", query: [
@@ -49,5 +49,27 @@ extension Droplet {
             return appId + "|" + appSecret
         }
         return ""
+    }
+    public func getUserInfo(token: String) throws -> [String: String] {
+        var userInfo = [String: String]()
+        let graph = GraphApiService.init(droplet: self)
+        guard let authResponse = graph.authenticate(token: token) else {
+            throw Abort.serverError
+        }
+        guard let userId = authResponse.facebookUserId else {
+            throw Abort.serverError
+        }
+        
+        guard let userProfile = graph.userProfile(userId: userId, token: token) else {
+            throw Abort.serverError
+        }
+        guard let name = userProfile.facebookName else {
+            throw Abort.serverError
+        }
+        
+        userInfo["userId"] = "\(userId)"
+        userInfo["name"] = name
+        
+        return userInfo
     }
 }
