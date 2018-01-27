@@ -53,3 +53,12 @@ extension TodoItem: Preparation {
         try database.delete(self)
     }
 }
+
+extension TodoItem: ResponseRepresentable {
+    func makeResponse() throws -> Response {
+        var json = JSON()
+        try json.set("title", title)
+        try json.set("checked", checked)
+        return try json.makeResponse()
+    }
+}

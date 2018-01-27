@@ -8,7 +8,7 @@ final class FacebookUser: Model {
 
     //Set up fields
     var name: String
-    var facebookUserId: String
+    var facebookUserId: Int
     var facebookToken: String
     var facebookFriends: Siblings<FacebookUser, FacebookUser, Pivot<FacebookUser,FacebookUser>> {
         return siblings()
@@ -23,7 +23,7 @@ final class FacebookUser: Model {
         static let facebookToken = "facebookToken"
     }
 
-    init(userId facebookUserId:String, token facebookToken:String, name:String){
+    init(userId facebookUserId:Int, token facebookToken:String, name:String){
         self.name = name
         self.facebookUserId = facebookUserId
         self.facebookToken = facebookToken
@@ -44,8 +44,8 @@ final class FacebookUser: Model {
     func makeRow() throws -> Row {
         var row = Row()
         try row.set(Keys.name, name)
-        try row.set(Keys.facebookToken, facebookToken)
         try row.set(Keys.facebookUserId, facebookUserId)
+        try row.set(Keys.facebookToken, facebookToken)
         return row
     }
 
@@ -55,7 +55,7 @@ extension FacebookUser: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) {
             $0.id()
-            $0.string(Keys.facebookUserId)
+            $0.int(Keys.facebookUserId, unique: true)
             $0.string(Keys.facebookToken)
             $0.string(Keys.name)
         }
@@ -63,5 +63,14 @@ extension FacebookUser: Preparation {
 
     static func revert(_ database: Database) throws {
         try database.delete(self)
+    }
+}
+
+extension FacebookUser: ResponseRepresentable {
+    func makeResponse() throws -> Response {
+        var json = JSON()
+        try json.set("user_id", facebookUserId)
+        try json.set("lists", todoLists)
+        return try json.makeResponse()
     }
 }

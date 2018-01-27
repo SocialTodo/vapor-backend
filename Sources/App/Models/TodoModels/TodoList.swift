@@ -6,6 +6,7 @@ final class TodoList: Model {
     let storage = Storage()
 
     var title: String
+    var shared: Bool
     var listOwnerId: Identifier
     var listOwner: Parent<TodoList, FacebookUser> {
         return parent(id: listOwnerId)
@@ -16,18 +17,21 @@ final class TodoList: Model {
 
     enum Keys {
         static let title = "title"
+        static let shared = "shared"
         static let listOwnerId = FacebookUser.foreignIdKey
     }
 
-    init(title:String, listOwner: FacebookUser) {
+    init(title:String, listOwner: FacebookUser, shared: Bool) {
         self.title = title
         // Add error handling if the user hasn't been saved yet
         self.listOwnerId = listOwner.id!
+        self.shared = shared
     }
 
     init(row: Row) throws {
         title = try row.get(Keys.title)
         listOwnerId = try row.get(Keys.listOwnerId)
+        shared = try row.get(Keys.shared)
     }
 
     func makeRow() throws -> Row {
@@ -42,6 +46,7 @@ extension TodoList: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) {
             $0.id()
+            $0.bool(Keys.shared)
             $0.string(Keys.title)
             $0.string(Keys.listOwnerId)
         }
@@ -51,3 +56,14 @@ extension TodoList: Preparation {
         try database.delete(self)
     }
 }
+
+extension TodoList: ResponseRepresentable {
+    func makeResponse() throws -> Response {
+        var json = JSON()
+        try json.set("title", title)
+        try json.set("list_id", id)
+        try json.set("list_items", listItems)
+        return try json.makeResponse()
+    }
+}
+
