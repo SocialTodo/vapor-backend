@@ -14,20 +14,26 @@ final class TodoListController {
 extension TodoListController: ResourceRepresentable {
     typealias Model = TodoList
     
-    private func getResponse(_ req: Request,  _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
+    private func getResponse(_ req: Request, _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
         let apiRequestHeaders = ApiRequestHeaders(req)
-        if let userId = apiRequestHeaders.facebookUserId, let token = apiRequestHeaders.token, let user = try userController.authenticate(userId: Int(truncatingIfNeeded: userId), token: token) {
+        //For some reason, if this optional is part of the conditional statement, it unwraps to a completley different value. I have no idea why, but this is a workaround for now
+        let facebookUserId = apiRequestHeaders.facebookUserId ?? 0
+        if let token = apiRequestHeaders.token, let user = try userController.authenticate(userId: Int(truncatingIfNeeded: facebookUserId), token: token) {
             return try query(user)
         } else {
             return Response(status: Status.badRequest)
         }
     }
     
-    func store(req: Request) throws -> ResponseRepresentable {
-        guard let json = req.json else { return Response(status: Status.badRequest) }
-        let newTodoItem = try TodoList(node: json)
-        try newTodoItem.save()
-        return Response(status: Status.ok)
+    func store(_ req: Request) throws -> ResponseRepresentable {
+        return try getResponse(req) { _ in
+            guard let json = req.json else { return Response(status: Status.badRequest) }
+            do {
+                let newTodoList = try TodoList(node: json)
+                try newTodoList.save()
+                return Response(status: Status.ok, body: try newTodoList.makeNode().converted(to: JSON.self))
+            } catch { return Response(status: Status.badRequest) }
+        }
     }
 
     func show(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
@@ -36,12 +42,22 @@ extension TodoListController: ResourceRepresentable {
         }
     }
     
+    func update(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
+        return try getResponse(req) { _ in
+            guard let json = req.json else { return Response(status: Status.badRequest) }
+            do {
+                id.update(node: json.converted(to: Node.self))
+                try id.save()
+                return Response(status: Status.ok, body: try id.makeNode().converted(to: JSON.self))
+            } catch { return Response(status: Status.badRequest) }
+        }
+    }
+    
     func makeResource() -> Resource<TodoList> {
         return Resource(
             store: store,
-            show: show
-            //update: update,
-            //destroy: destroy
+            show: show,
+            update: update
         )
     }
 }

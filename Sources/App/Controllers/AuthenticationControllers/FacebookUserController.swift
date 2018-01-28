@@ -51,7 +51,7 @@ extension FacebookUserController: ResourceRepresentable {
     private func getResponse(_ req: Request, _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
         let apiRequestHeaders = ApiRequestHeaders(req)
         //For some reason, if this optional is part of the conditional statement, it unwraps to a completley different value. I have no idea why, but this is a workaround for now
-        let facebookUserId = apiRequestHeaders.facebookUserId!
+        let facebookUserId = apiRequestHeaders.facebookUserId ?? 0
         if let token = apiRequestHeaders.token, let user = try self.authenticate(userId: Int(truncatingIfNeeded: facebookUserId), token: token) {
             return try query(user)
         } else {
@@ -61,7 +61,7 @@ extension FacebookUserController: ResourceRepresentable {
     
     func index(req: Request) throws -> ResponseRepresentable {
         return try getResponse(req){ user in
-            return try TodoList.makeQuery().filter(TodoList.Keys.listOwnerId, .equals, user.id!).all().makeNode(in: nil).converted(to: JSON.self) as ResponseRepresentable
+            return try Response(status: Status.ok, body: TodoList.makeQuery().filter(TodoList.Keys.listOwnerId, .equals, user.id!).all().makeNode(in: nil).converted(to: JSON.self))
         }
     }
     

@@ -66,6 +66,15 @@ extension TodoList: NodeConvertible {
         )
     }
 
+    func update(node: Node) {
+        if let title = node[Keys.title]!.string {
+            self.title = title;
+        }
+        if let shared = node[Keys.shared]!.bool {
+            self.shared = shared;
+        }
+    }
+    
     func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
             [

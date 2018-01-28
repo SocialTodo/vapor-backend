@@ -63,6 +63,15 @@ extension TodoItem: NodeConvertible {
             parentListId: node[Keys.parentListId]!.int!
         )
     }
+    
+    func update(node: Node) {
+        if let title = node[Keys.title]!.string {
+            self.title = title;
+        }
+        if let checked = node[Keys.checked]!.bool {
+            self.checked = checked;
+        }
+    }
 
     func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
