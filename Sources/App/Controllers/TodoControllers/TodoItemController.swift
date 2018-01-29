@@ -36,20 +36,27 @@ extension TodoItemController: ResourceRepresentable {
         }
     }
 
-    func show(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
+    func show(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
         return try getResponse(req) { user in
-            return try id.makeNode().converted(to: JSON.self)
+            return try todoItem.makeNode().converted(to: JSON.self)
         }
     }
     
-    func update(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
+    func update(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
         return try getResponse(req) { _ in
             guard let json = req.json else { return Response(status: Status.badRequest) }
             do {
-                id.update(node: json.converted(to: Node.self))
-                try id.save()
-                return Response(status: Status.ok, body: try id.makeNode().converted(to: JSON.self))
+                todoItem.update(node: json.converted(to: Node.self))
+                try todoItem.save()
+                return Response(status: Status.ok, body: try todoItem.makeNode().converted(to: JSON.self))
             } catch { return Response(status: Status.badRequest) }
+        }
+    }
+    
+    func destroy(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
+        return try getResponse(req) { _ in
+            try todoItem.delete()
+            return Response(status: Status.ok)
         }
     }
     
@@ -57,7 +64,8 @@ extension TodoItemController: ResourceRepresentable {
         return Resource(
             store: store,
             show: show,
-            update: update
+            update: update,
+            destroy: destroy
         )
     }
 }

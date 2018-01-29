@@ -26,9 +26,10 @@ extension TodoListController: ResourceRepresentable {
     }
     
     func store(_ req: Request) throws -> ResponseRepresentable {
-        return try getResponse(req) { _ in
-            guard let json = req.json else { return Response(status: Status.badRequest) }
+        return try getResponse(req) { user in
+            guard var json = req.json else { return Response(status: Status.badRequest) }
             do {
+                try json.set(FacebookUser.foreignIdKey, user.id!)
                 let newTodoList = try TodoList(node: json)
                 try newTodoList.save()
                 return Response(status: Status.ok, body: try newTodoList.makeNode().converted(to: JSON.self))
@@ -36,20 +37,28 @@ extension TodoListController: ResourceRepresentable {
         }
     }
 
-    func show(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
-        return try getResponse(req) { user in
-            return try id.makeNode().converted(to: JSON.self)
+    func show(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
+        return try getResponse(req) { _ in
+            return try todoList.makeNode().converted(to: JSON.self)
         }
     }
     
-    func update(_ req: Request, _ id: Model) throws -> ResponseRepresentable {
+    func update(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
         return try getResponse(req) { _ in
             guard let json = req.json else { return Response(status: Status.badRequest) }
             do {
-                id.update(node: json.converted(to: Node.self))
-                try id.save()
-                return Response(status: Status.ok, body: try id.makeNode().converted(to: JSON.self))
+                todoList.update(node: json.converted(to: Node.self))
+                try todoList.save()
+                return Response(status: Status.ok, body: try todoList.makeNode().converted(to: JSON.self))
             } catch { return Response(status: Status.badRequest) }
+        }
+    }
+    
+    func destory(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
+        return try getResponse(req){ _ in
+            try todoList.listItems.delete()
+            try todoList.delete()
+            return Response(status: Status.ok)
         }
     }
     
