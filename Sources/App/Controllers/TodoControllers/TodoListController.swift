@@ -71,6 +71,7 @@ extension TodoListController: ResourceRepresentable {
     
     func makeResource() -> Resource<TodoList> {
         return Resource(
+            index: index,
             store: store,
             show: show,
             update: update
