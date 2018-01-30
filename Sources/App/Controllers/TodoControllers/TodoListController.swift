@@ -25,6 +25,12 @@ extension TodoListController: ResourceRepresentable {
         }
     }
     
+    func index(_ req: Request) throws -> ResponseRepresentable {
+        return try getResponse(req) { user in
+            return try Response(status: Status.ok, body: TodoList.makeQuery().filter(TodoList.Keys.listOwnerId, .equals, user.id!).all().map{try $0.makeNode(in: nil).converted(to: JSON.self)}.makeJSON())
+        }
+    }
+    
     func store(_ req: Request) throws -> ResponseRepresentable {
         return try getResponse(req) { user in
             guard var json = req.json else { return Response(status: Status.badRequest) }
@@ -39,7 +45,8 @@ extension TodoListController: ResourceRepresentable {
 
     func show(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
         return try getResponse(req) { _ in
-            return try todoList.makeNode().converted(to: JSON.self)
+            return try Response(status: Status.ok, body: TodoItem.makeQuery().filter(TodoItem.Keys.parentListId, .equals, todoList.id!).all().map{try $0.makeNode(in: nil).converted(to: JSON.self)}.makeJSON())
+            //return try todoList.makeNode().converted(to: JSON.self)
         }
     }
     

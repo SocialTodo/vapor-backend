@@ -30,6 +30,10 @@ extension Droplet {
         }
     }
     
+    /*func getFriends(userId facebookUserId: Int, token facebookToken: String) {
+        
+    }*/
+    
     public func accessToken() -> String {
         if let appId = ProcessInfo.processInfo.environment["SOCIAL_TODO_APP_ID"],
            let appSecret = ProcessInfo.processInfo.environment["SOCIAL_TODO_APP_SECRET"] {

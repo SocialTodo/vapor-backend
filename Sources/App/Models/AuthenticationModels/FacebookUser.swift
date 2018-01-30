@@ -79,7 +79,8 @@ extension FacebookUser: NodeConvertible {
     func makeNode(in context: Context? = nil) throws -> Node {
         return try Node.init(node:
             [
-                Keys.id: id,
+                //To silence an error
+                Keys.id: id as Any,
                 Keys.name: name,
                 Keys.facebookUserId: facebookUserId,
                 Keys.facebookToken: facebookToken

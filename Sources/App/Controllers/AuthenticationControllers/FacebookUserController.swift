@@ -59,15 +59,9 @@ extension FacebookUserController: ResourceRepresentable {
         }
     }
     
-    func index(req: Request) throws -> ResponseRepresentable {
-        return try getResponse(req){ user in
-            return try Response(status: Status.ok, body: TodoList.makeQuery().filter(TodoList.Keys.listOwnerId, .equals, user.id!).all().makeNode(in: nil).converted(to: JSON.self))
-        }
-    }
-    
     func makeResource() -> Resource<FacebookUser> {
         return Resource(
-            index: index
+            //index: index
         )
     }
 }
