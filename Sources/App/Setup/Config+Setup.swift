@@ -20,8 +20,7 @@ extension Config {
     private func setupPreparations() throws {
         preparations.append(FacebookUser.self)
         let pivotTable = Pivot<FacebookUser,FacebookUser>.self
-        pivotTable.rightIdKey = "facebookUserId"
-        pivotTable.leftIdKey = "facebookFriendId"
+        pivotTable.rightIdKey = "facebookFriendId"
         preparations.append(pivotTable)
         preparations.append(TodoList.self)
         preparations.append(TodoItem.self)

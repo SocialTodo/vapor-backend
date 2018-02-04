@@ -38,6 +38,7 @@ final class TodoList: Model {
         var row = Row()
         try row.set(Keys.title, title)
         try row.set(Keys.listOwnerId, listOwnerId)
+        try row.set(Keys.shared, shared)
         return row
     }
 }

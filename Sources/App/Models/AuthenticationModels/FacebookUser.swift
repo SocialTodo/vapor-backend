@@ -10,8 +10,11 @@ final class FacebookUser: Model {
     var name: String
     var facebookUserId: Int
     var facebookToken: String
+    
     var facebookFriends: Siblings<FacebookUser, FacebookUser, Pivot<FacebookUser,FacebookUser>> {
-        return siblings()
+        let pivotTable = Pivot<FacebookUser,FacebookUser>.self
+        pivotTable.rightIdKey = "facebookFriendId"
+        return siblings(to: FacebookUser.self, through: pivotTable, localIdKey: FacebookUser.foreignIdKey, foreignIdKey:  "facebookFriendId" )
     }
     var todoLists: Children<FacebookUser, TodoList> {
         return children()

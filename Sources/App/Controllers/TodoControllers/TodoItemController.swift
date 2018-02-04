@@ -14,19 +14,8 @@ final class TodoItemController {
 extension TodoItemController: ResourceRepresentable {
     typealias Model = TodoItem
 
-    private func getResponse(_ req: Request, _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
-        let apiRequestHeaders = ApiRequestHeaders(req)
-        //For some reason, if this optional is part of the conditional statement, it unwraps to a completley different value. I have no idea why, but this is a workaround for now
-        let facebookUserId = apiRequestHeaders.facebookUserId ?? 0
-        if let token = apiRequestHeaders.token, let user = try userController.authenticate(userId: Int(truncatingIfNeeded: facebookUserId), token: token) {
-            return try query(user)
-        } else {
-            return Response(status: Status.badRequest)
-        }
-    }
-    
     func store(_ req: Request) throws -> ResponseRepresentable {
-        return try getResponse(req) { _ in
+        return try userController.getResponse(req) { _ in
             guard let json = req.json else { return Response(status: Status.badRequest) }
             do {
                 let newTodoItem = try TodoItem(node: json)
@@ -37,13 +26,13 @@ extension TodoItemController: ResourceRepresentable {
     }
 
     func show(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
-        return try getResponse(req) { user in
+        return try userController.getResponse(req) { user in
             return try todoItem.makeNode().converted(to: JSON.self)
         }
     }
     
     func update(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
-        return try getResponse(req) { _ in
+        return try userController.getResponse(req) { _ in
             guard let json = req.json else { return Response(status: Status.badRequest) }
             do {
                 todoItem.update(node: json.converted(to: Node.self))
@@ -54,7 +43,7 @@ extension TodoItemController: ResourceRepresentable {
     }
     
     func destroy(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
-        return try getResponse(req) { _ in
+        return try userController.getResponse(req) { _ in
             try todoItem.delete()
             return Response(status: Status.ok)
         }

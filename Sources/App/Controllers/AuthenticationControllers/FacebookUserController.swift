@@ -43,25 +43,39 @@ final class FacebookUserController {
             return nil
         }
     }
+  
+    public func getResponse(_ req: Request, _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
+        let apiRequestHeaders = ApiRequestHeaders(req)
+        //For some reason, if this optional is part of the conditional statement, it unwraps to a completley different value. I have no idea why, but this is a workaround for now
+        let facebookUserId = apiRequestHeaders.facebookUserId ?? 0
+        if let token = apiRequestHeaders.token, let user = try self.authenticate(userId: Int(truncatingIfNeeded: facebookUserId), token: token) {
+          return try query(user)
+        } else {
+          return Response(status: Status.badRequest)
+        }
+    }
+    
+
 }
 
 extension FacebookUserController: ResourceRepresentable {
     typealias Model = FacebookUser
     
-    private func getResponse(_ req: Request, _ query: (FacebookUser) throws -> (ResponseRepresentable)) throws -> ResponseRepresentable {
-        let apiRequestHeaders = ApiRequestHeaders(req)
-        //For some reason, if this optional is part of the conditional statement, it unwraps to a completley different value. I have no idea why, but this is a workaround for now
-        let facebookUserId = apiRequestHeaders.facebookUserId ?? 0
-        if let token = apiRequestHeaders.token, let user = try self.authenticate(userId: Int(truncatingIfNeeded: facebookUserId), token: token) {
-            return try query(user)
-        } else {
-            return Response(status: Status.badRequest)
+    public func updateFriends(_ user: FacebookUser) throws {
+        try user.setFriends(friends: drop.getFriendsForUser(userId: user.facebookUserId, token: user.facebookToken))
+    }
+    
+    func index(_ req: Request) throws -> ResponseRepresentable {
+        return try self.getResponse(req) { user in
+            try updateFriends(user)
+            //return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeNode(in: nil).converted(to: JSON.self)}.makeJSON())
+            return Response(status: Status.ok)
         }
     }
     
     func makeResource() -> Resource<FacebookUser> {
         return Resource(
-            //index: index
+            index: index
         )
     }
 }
