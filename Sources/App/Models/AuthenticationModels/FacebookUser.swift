@@ -93,8 +93,9 @@ extension FacebookUser: NodeConvertible {
 extension FacebookUser: ResponseRepresentable {
     func makeResponse() throws -> Response {
         var json = JSON()
-        try json.set("user_id", facebookUserId)
-        try json.set("lists", todoLists)
+        try json.set("id", id!)
+        try json.set(Keys.name, name)
+        try json.set("lists", try todoLists.all().map{try $0.makeResponse()})
         return try json.makeResponse()
     }
 }

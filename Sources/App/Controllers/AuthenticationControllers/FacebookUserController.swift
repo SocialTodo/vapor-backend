@@ -12,10 +12,8 @@ final class FacebookUserController {
     
     public func authenticate(userId facebookUserId:Int, token facebookToken:String) throws -> FacebookUser? {
         if let loggedInUser = try cachedLogin(userId: facebookUserId, token: facebookToken) {
-            do { try updateFriends(loggedInUser) } catch {}
             return loggedInUser
         } else if let loggedInUser = try graphApiLogin(userId: facebookUserId, token: facebookToken) {
-            do { try updateFriends(loggedInUser) } catch {}
             return loggedInUser
         } else {
             return nil
@@ -70,8 +68,12 @@ extension FacebookUserController: ResourceRepresentable {
     func index(_ req: Request) throws -> ResponseRepresentable {
         return try self.getResponse(req) { user in
             try updateFriends(user)
-            //return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeNode(in: nil).converted(to: JSON.self)}.makeJSON())
-            return Response(status: Status.ok)
+            let temp = try user.facebookFriends.all()
+            let temp2 = try temp.map{try $0.makeNode().converted(to: JSON.self)}
+            let temp3 = try temp2.makeJSON()
+            
+            return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeResponse().json!}.makeJSON())
+            //return Response(status: Status.ok)
         }
     }
     
