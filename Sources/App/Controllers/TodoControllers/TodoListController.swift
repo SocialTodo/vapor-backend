@@ -53,7 +53,7 @@ extension TodoListController: ResourceRepresentable {
         }
     }
     
-    func destory(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
+    func destroy(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
         return try userController.getResponse(req){ _ in
             try todoList.listItems.delete()
             try todoList.delete()
@@ -66,7 +66,8 @@ extension TodoListController: ResourceRepresentable {
             index: index,
             store: store,
             show: show,
-            update: update
+            update: update,
+            destroy: destroy
         )
     }
 }
