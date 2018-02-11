@@ -12,8 +12,10 @@ final class FacebookUserController {
     
     public func authenticate(userId facebookUserId:Int, token facebookToken:String) throws -> FacebookUser? {
         if let loggedInUser = try cachedLogin(userId: facebookUserId, token: facebookToken) {
+            do { try updateFriends(loggedInUser) } catch {}
             return loggedInUser
         } else if let loggedInUser = try graphApiLogin(userId: facebookUserId, token: facebookToken) {
+            do { try updateFriends(loggedInUser) } catch {}
             return loggedInUser
         } else {
             return nil

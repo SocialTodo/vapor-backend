@@ -19,9 +19,7 @@ extension Config {
     /// schemas prepared before the app boots
     private func setupPreparations() throws {
         preparations.append(FacebookUser.self)
-        let pivotTable = Pivot<FacebookUser,FacebookUser>.self
-        pivotTable.rightIdKey = "facebookFriendId"
-        preparations.append(pivotTable)
+        preparations.append(FacebookFriends.self)
         preparations.append(TodoList.self)
         preparations.append(TodoItem.self)
         preparations.append(Pivot<TodoList,TodoItem>.self)

@@ -11,10 +11,8 @@ final class FacebookUser: Model {
     var facebookUserId: Int
     var facebookToken: String
     
-    var facebookFriends: Siblings<FacebookUser, FacebookUser, Pivot<FacebookUser,FacebookUser>> {
-        let pivotTable = Pivot<FacebookUser,FacebookUser>.self
-        pivotTable.rightIdKey = "facebookFriendId"
-        return siblings(to: FacebookUser.self, through: pivotTable, localIdKey: FacebookUser.foreignIdKey, foreignIdKey:  "facebookFriendId" )
+    var facebookFriends: Siblings<FacebookUser, FacebookUser, FacebookFriends> {
+        return siblings(to: FacebookUser.self, through: FacebookFriends.self, localIdKey: FacebookUser.foreignIdKey + "From", foreignIdKey: FacebookUser.foreignIdKey + "To")
     }
     var todoLists: Children<FacebookUser, TodoList> {
         return children()
@@ -40,8 +38,8 @@ final class FacebookUser: Model {
     }
 
     func setFriends(friends friendFacebookUsers:[FacebookUser]) throws {
-        // This is a temporary workaround; deletes all the models then re-adds the ones passed.
-        try facebookFriends.delete()
+        //If you try to use the ORM here, it will try to do a INNER JOIN inside of a DELETE, which isn't supported in SQLite
+        try FacebookFriends.database?.raw("DELETE FROM `facebook_friendss` WHERE `\(FacebookUser.foreignIdKey + "From")` = \(id!.wrapped)")
         try friendFacebookUsers.forEach{ try facebookFriends.add($0) }
     }
 
