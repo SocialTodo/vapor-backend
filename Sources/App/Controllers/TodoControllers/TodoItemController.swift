@@ -2,8 +2,6 @@ import Vapor
 import HTTP
 
 final class TodoItemController {
-    typealias Model = TodoItem
-
     let drop: Droplet
     let userController: FacebookUserController
     
@@ -11,54 +9,52 @@ final class TodoItemController {
         drop = droplet
         userController = facebookUserController
     }
-    
-    //Mark: CRUD
-    
-    func getTodoItemsForList(req: Request) throws -> ResponseRepresentable {
-        let headers = ApiRequestHeaders(req)
-        let listId = try req.parameters.next(Int.self)
-        
-        if let user = try userController.authenticate(userId: headers.facebookUserId!, token: headers.token!) {
-            if let todoList = try getTodoItem(listId) {
-                return try todoItem.makeResponse()
-            } else {
-                return Response(status: Status.badRequest)
-            }
-        } else {
-            return Response(status: Status.forbidden)
+}
+
+extension TodoItemController: ResourceRepresentable {
+    typealias Model = TodoItem
+
+    func store(_ req: Request) throws -> ResponseRepresentable {
+        return try userController.getResponse(req) { _ in
+            guard let json = req.json else { return Response(status: Status.badRequest) }
+            do {
+                let newTodoItem = try TodoItem(node: json)
+                try newTodoItem.save()
+                return Response(status: Status.ok, body: try newTodoItem.makeNode().converted(to: JSON.self))
+            } catch { return Response(status: Status.badRequest) }
+        }
+    }
+
+    func show(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
+        return try userController.getResponse(req) { user in
+            return try todoItem.makeNode().converted(to: JSON.self)
         }
     }
     
-    func createTodoItem(req: Request) throws -> ResponseRepresentable {
-        let headers = ApiRequestHeaders(req)
-        let listId = try req.parameters.next(Int.self)
-        
-        if let user = try userController.authenticate(userId: headers.facebookUserId!, token: headers.token!) {
-            return try user.makeResponse()
-        } else {
-            return Response(status: Status.forbidden)
+    func update(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
+        return try userController.getResponse(req) { _ in
+            guard let json = req.json else { return Response(status: Status.badRequest) }
+            do {
+                todoItem.update(node: json.converted(to: Node.self))
+                try todoItem.save()
+                return Response(status: Status.ok, body: try todoItem.makeNode().converted(to: JSON.self))
+            } catch { return Response(status: Status.badRequest) }
         }
     }
     
-    func editTodoItem(req: Request) throws -> ResponseRepresentable {
-        let headers = ApiRequestHeaders(req)
-        if let user = try userController.authenticate(userId: headers.facebookUserId!, token: headers.token!) {
-            return try user.makeResponse()
-        } else {
-            return Response(status: Status.forbidden)
+    func destroy(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
+        return try userController.getResponse(req) { _ in
+            try todoItem.delete()
+            return Response(status: Status.ok)
         }
     }
     
-    func deleteTodoItem(req: Request) throws -> ResponseRepresentable {
-        let headers = ApiRequestHeaders(req)
-        if let user = try userController.authenticate(userId: headers.facebookUserId!, token: headers.token!) {
-            return try user.makeResponse()
-        } else {
-            return Response(status: Status.forbidden)
-        }
-    }
-    
-    func getTodoList(_ listId: Int) throws -> TodoItem? {
-        return try TodoItem.makeQuery().find(listId)
+    func makeResource() -> Resource<TodoItem> {
+        return Resource(
+            store: store,
+            show: show,
+            update: update,
+            destroy: destroy
+        )
     }
 }

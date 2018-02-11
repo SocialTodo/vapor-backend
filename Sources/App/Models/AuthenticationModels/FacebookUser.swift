@@ -10,14 +10,16 @@ final class FacebookUser: Model {
     var name: String
     var facebookUserId: Int
     var facebookToken: String
-    var facebookFriends: Siblings<FacebookUser, FacebookUser, Pivot<FacebookUser,FacebookUser>> {
-        return siblings()
+    
+    var facebookFriends: Siblings<FacebookUser, FacebookUser, FacebookFriends> {
+        return siblings(to: FacebookUser.self, through: FacebookFriends.self, localIdKey: FacebookUser.foreignIdKey + "From", foreignIdKey: FacebookUser.foreignIdKey + "To")
     }
     var todoLists: Children<FacebookUser, TodoList> {
         return children()
     }
 
     struct Keys {
+        static let id = "id"
         static let name = "name"
         static let facebookUserId = "facebookUserId"
         static let facebookToken = "facebookToken"
@@ -36,8 +38,8 @@ final class FacebookUser: Model {
     }
 
     func setFriends(friends friendFacebookUsers:[FacebookUser]) throws {
-        // This is a temporary workaround; deletes all the models then re-adds the ones passed.
-        try facebookFriends.delete()
+        //If you try to use the ORM here, it will try to do a INNER JOIN inside of a DELETE, which isn't supported in SQLite
+        try FacebookFriends.database?.raw("DELETE FROM `facebook_friendss` WHERE `\(FacebookUser.foreignIdKey + "From")` = \(id!.wrapped)")
         try friendFacebookUsers.forEach{ try facebookFriends.add($0) }
     }
 
@@ -66,11 +68,34 @@ extension FacebookUser: Preparation {
     }
 }
 
+extension FacebookUser: NodeConvertible {
+    convenience init(node: Node) throws {
+            self.init(
+                userId: node[Keys.facebookUserId]!.int!,
+                token: node[Keys.facebookToken]!.string!,
+                name: node[Keys.name]!.string!
+            )
+    }
+
+    func makeNode(in context: Context? = nil) throws -> Node {
+        return try Node.init(node:
+            [
+                //To silence an error
+                Keys.id: id as Any,
+                Keys.name: name,
+                Keys.facebookUserId: facebookUserId,
+                Keys.facebookToken: facebookToken
+            ]
+        )
+    }
+}
+
 extension FacebookUser: ResponseRepresentable {
     func makeResponse() throws -> Response {
         var json = JSON()
-        try json.set("user_id", facebookUserId)
-        try json.set("lists", todoLists)
+        try json.set("id", id!)
+        try json.set(Keys.name, name)
+        try json.set("lists", try todoLists.all().map{try $0.makeResponse()})
         return try json.makeResponse()
     }
 }

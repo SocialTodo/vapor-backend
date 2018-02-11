@@ -16,15 +16,15 @@ final class TodoList: Model {
     }
 
     enum Keys {
+        static let id = "id"
         static let title = "title"
         static let shared = "shared"
         static let listOwnerId = FacebookUser.foreignIdKey
     }
-
-    init(title:String, listOwner: FacebookUser, shared: Bool) {
+    init(title:String, listOwner: Int, shared: Bool) {
         self.title = title
         // Add error handling if the user hasn't been saved yet
-        self.listOwnerId = listOwner.id!
+        self.listOwnerId = Identifier(listOwner)
         self.shared = shared
     }
 
@@ -38,6 +38,7 @@ final class TodoList: Model {
         var row = Row()
         try row.set(Keys.title, title)
         try row.set(Keys.listOwnerId, listOwnerId)
+        try row.set(Keys.shared, shared)
         return row
     }
 }
@@ -46,14 +47,45 @@ extension TodoList: Preparation {
     static func prepare(_ database: Database) throws {
         try database.create(self) {
             $0.id()
-            $0.bool(Keys.shared)
             $0.string(Keys.title)
             $0.string(Keys.listOwnerId)
+            $0.bool(Keys.shared)
         }
     }
 
     static func revert(_ database: Database) throws {
         try database.delete(self)
+    }
+}
+
+extension TodoList: NodeConvertible {
+    convenience init(node: Node) throws {
+        self.init(
+            title: node[Keys.title]!.string!,
+            listOwner: node[Keys.listOwnerId]!.int!,
+            shared: node[Keys.shared]!.bool!
+        )
+    }
+
+    func update(node: Node) {
+        if let title = node[Keys.title]!.string {
+            self.title = title;
+        }
+        if let shared = node[Keys.shared]!.bool {
+            self.shared = shared;
+        }
+    }
+    
+    func makeNode(in context: Context? = nil) throws -> Node {
+        return try Node.init(node:
+            [
+                //To silence a warning
+                Keys.id: id as Any,
+                Keys.title: title,
+                Keys.listOwnerId: listOwnerId,
+                Keys.shared: shared
+            ]
+        )
     }
 }
 
