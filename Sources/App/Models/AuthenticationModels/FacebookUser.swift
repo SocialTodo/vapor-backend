@@ -95,7 +95,7 @@ extension FacebookUser: ResponseRepresentable {
         var json = JSON()
         try json.set("id", id!)
         try json.set(Keys.name, name)
-        try json.set("lists", try todoLists.all().map{try $0.makeResponse()})
+        try json.set("lists", try todoLists.all().map{try $0.makeNode()})
         return try json.makeResponse()
     }
 }
