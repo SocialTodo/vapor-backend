@@ -68,12 +68,7 @@ extension FacebookUserController: ResourceRepresentable {
     func index(_ req: Request) throws -> ResponseRepresentable {
         return try self.getResponse(req) { user in
             try updateFriends(user)
-            let temp = try user.facebookFriends.all()
-            let temp2 = try temp.map{try $0.makeNode().converted(to: JSON.self)}
-            let temp3 = try temp2.makeJSON()
-            
             return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeResponse().json!}.makeJSON())
-            //return Response(status: Status.ok)
         }
     }
     
