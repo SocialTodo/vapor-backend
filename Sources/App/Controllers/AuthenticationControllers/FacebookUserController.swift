@@ -66,10 +66,12 @@ extension FacebookUserController: ResourceRepresentable {
     }
     
     func index(_ req: Request) throws -> ResponseRepresentable {
-        return try self.getResponse(req) { user in
-            try updateFriends(user)
-            return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeResponse().json!}.makeJSON())
-        }
+        do {
+            return try self.getResponse(req) { user in
+                try updateFriends(user)
+                return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeResponse().json!}.makeJSON())
+            }
+        } catch { print(error); return Response(status: Status.internalServerError)}
     }
     
     func makeResource() -> Resource<FacebookUser> {
