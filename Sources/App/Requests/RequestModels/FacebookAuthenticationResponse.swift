@@ -12,7 +12,8 @@ class FacebookAuthenticationResponse {
         valid = response["is_valid"]!.bool
         if (valid ?? false){
             //Refactor this mess of NSDate
-            expiration = NSDate(timeIntervalSince1970: Double(response["expires_at"]!.int!)) as! Date
+            //expiration = NSDate(timeIntervalSince1970: Double(response["expires_at"]!.int!)) as! Dates
+            expiration = nil
             permissions = response["scopes"]!.array?.map{ $0.string }
             facebookUserId = response["user_id"]!.int
         } else {
