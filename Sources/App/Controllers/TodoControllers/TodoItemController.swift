@@ -24,7 +24,7 @@ extension TodoItemController: ResourceRepresentable {
                     return Response(status: Status.ok, body: try newTodoItem.makeNode().converted(to: JSON.self))
                 } catch { return Response(status: Status.badRequest) }
             }
-        } catch { print(error); return Response(status: Status.internalServerError)}
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
 
     func show(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
@@ -32,7 +32,7 @@ extension TodoItemController: ResourceRepresentable {
             return try userController.getResponse(req) { user in
                 return try todoItem.makeNode().converted(to: JSON.self)
             }
-        } catch { print(error); return Response(status: Status.internalServerError)}
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
     func update(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
@@ -45,7 +45,7 @@ extension TodoItemController: ResourceRepresentable {
                 return Response(status: Status.ok, body: try todoItem.makeNode().converted(to: JSON.self))
                 } catch { return Response(status: Status.badRequest) }
             }
-        } catch { print(error); return Response(status: Status.internalServerError)}
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
     func destroy(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
@@ -54,7 +54,7 @@ extension TodoItemController: ResourceRepresentable {
                 try todoItem.delete()
                 return Response(status: Status.ok)
             }
-        } catch { print(error); return Response(status: Status.internalServerError)}
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
     func makeResource() -> Resource<TodoItem> {

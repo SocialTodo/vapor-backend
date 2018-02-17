@@ -71,7 +71,7 @@ extension FacebookUserController: ResourceRepresentable {
                 try updateFriends(user)
                 return try Response(status: Status.ok, body: user.facebookFriends.all().map{try $0.makeResponse().json!}.makeJSON())
             }
-        } catch { print(error); return Response(status: Status.internalServerError)}
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
     func makeResource() -> Resource<FacebookUser> {

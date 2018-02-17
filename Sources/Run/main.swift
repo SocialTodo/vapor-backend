@@ -1,9 +1,19 @@
 import App
 
 let config = try Config()
-try config.setup()
+do {
+    try config.setup()
+} catch {
+    print(error)
+}
 
 public let drop = try Droplet(config)
-try drop.setup()
 
-try drop.run()
+do {
+    try drop.setup()
+
+    try drop.run()
+} catch {
+    print(error)
+}
+
