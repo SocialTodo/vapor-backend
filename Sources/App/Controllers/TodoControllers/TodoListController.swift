@@ -61,7 +61,7 @@ extension TodoListController: ResourceRepresentable {
         } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
-    func destory(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
+    func destroy(_ req: Request, _ todoList: Model) throws -> ResponseRepresentable {
         do {
             return try userController.getResponse(req){ _ in
                 try todoList.listItems.delete()
@@ -76,7 +76,8 @@ extension TodoListController: ResourceRepresentable {
             index: index,
             store: store,
             show: show,
-            update: update
+            update: update,
+            destroy: destroy
         )
     }
 }
