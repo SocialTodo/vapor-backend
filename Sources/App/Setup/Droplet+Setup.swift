@@ -2,6 +2,10 @@
 
 extension Droplet {
     public func setup() throws {
-        try setupRoutes()
+        do {
+            try setupRoutes()
+        } catch {
+            print(error)
+        }
     }
 }

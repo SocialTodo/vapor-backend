@@ -5,14 +5,19 @@ extension Config {
         // allow fuzzy conversions for these types
         // (add your own types here)
         Node.fuzzy = [Row.self, JSON.self, Node.self]
-
-        try setupProviders()
-        try setupPreparations()
+        
+        do {
+            try setupProviders()
+            try setupPreparations()
+        } catch { print(error) }
+        
     }
     
     /// Configure providers
     private func setupProviders() throws {
-        try addProvider(FluentProvider.Provider.self)
+        do {
+            try addProvider(FluentProvider.Provider.self)
+        } catch { print(error) }
     }
     
     /// Add all models that should have their
