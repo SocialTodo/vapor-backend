@@ -1,0 +1,7 @@
+{
+    "hostname": "db",
+    "user": "test",
+    "password": "dolphin",
+    "database": "test",
+    "port": 5432
+}
