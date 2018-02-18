@@ -13,5 +13,5 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_USER: test
       POSTGRES_PASSWORD: dolphins
+      POSTGRES_DB: socialtodo

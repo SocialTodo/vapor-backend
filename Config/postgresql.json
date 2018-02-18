@@ -1,7 +1,7 @@
 {
     "hostname": "db",
-    "user": "test",
-    "password": "dolphin",
-    "database": "test",
+    "user": "postgres",
+    "password": "dolphins",
+    "database": "socialtodo",
     "port": 5432
 }
