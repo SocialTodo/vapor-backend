@@ -11,11 +11,17 @@ final class TodoItem: Model {
     var parentList: Parent<TodoItem, TodoList> {
         return parent(id: parentListId)
     }
-
+    var claps: Siblings<TodoItem, FacebookUser, Pivot<TodoItem, FacebookUser>> {
+        return siblings()
+    }
+    
     enum Keys {
         static let id = "id"
         static let title = "title"
         static let checked = "checked"
+        //This is actually on a pivot table, but for the Node
+        //representations this will make JSON serializaiton easier
+        static let claps = "claps"
         static let parentListId = TodoList.foreignIdKey
     }
 
@@ -46,6 +52,7 @@ extension TodoItem: Preparation {
             $0.id()
             $0.string(Keys.title)
             $0.bool(Keys.checked)
+            $0.int(Keys.claps)
             $0.parent(TodoList.self)
         }
     }
@@ -80,6 +87,7 @@ extension TodoItem: NodeConvertible {
                 Keys.id: id as Any,
                 Keys.title: title,
                 Keys.checked: checked,
+                Keys.claps: claps.count(),
                 Keys.parentListId: parentListId
             ]
         )
@@ -91,6 +99,7 @@ extension TodoItem: ResponseRepresentable {
         var json = JSON()
         try json.set("title", title)
         try json.set("checked", checked)
+        try json.set("claps", claps.count())
         return try json.makeResponse()
     }
 }

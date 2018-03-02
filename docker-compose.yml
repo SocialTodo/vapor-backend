@@ -15,3 +15,5 @@ services:
     environment:
       POSTGRES_PASSWORD: dolphins
       POSTGRES_DB: socialtodo
+    volumes:
+      - "../postgres:/var/lib/postgresql"

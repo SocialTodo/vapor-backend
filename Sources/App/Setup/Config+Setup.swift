@@ -28,5 +28,6 @@ extension Config {
         preparations.append(TodoList.self)
         preparations.append(TodoItem.self)
         preparations.append(Pivot<TodoList,TodoItem>.self)
+        preparations.append(Pivot<TodoItem,FacebookUser>.self)
     }
 }

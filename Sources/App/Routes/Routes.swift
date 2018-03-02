@@ -1,4 +1,5 @@
 import Vapor
+import Foundation
 
 extension Droplet {
     func setupRoutes() throws {
@@ -8,6 +9,35 @@ extension Droplet {
         
         //Entry point for the application
         //This should return the user's name, facebook id, user id, and the lists_id they own
+        
+        //return all friends with friend id, total claps and user's first and last name
+        self.get("api/friends") {
+            do {
+                return try facebookUserController.getResponse($0){ user in
+                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                }
+            } catch { return Response(status:.forbidden) }
+        }
+        
+        //Claps or unclaps a todoitem
+        self.post("api/clap") {
+            do {
+                return try facebookUserController.getResponse($0){ user in
+                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                }
+            } catch { return Response(status:.forbidden) }
+        }
+        
+        //return all shared todo lists
+        self.post("api/clap") {
+            do {
+                return try facebookUserController.getResponse($0){ user in
+                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                }
+            } catch { return Response(status:.forbidden) }
+        }
+        
+        //total claps, user's first and last name and number of friends
         
         self.resource("api/users", facebookUserController)
         
