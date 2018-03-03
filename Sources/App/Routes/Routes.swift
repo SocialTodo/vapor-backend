@@ -29,10 +29,18 @@ extension Droplet {
         }
         
         //return all shared todo lists
-        self.post("api/clap") {
+        self.post("api/clap") { req in
             do {
-                return try facebookUserController.getResponse($0){ user in
-                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                return try facebookUserController.getResponse(req){ user in
+                    guard let json = req.json else { return Response(status: .badRequest) }
+                    guard let todoItemId = json["clap"]?.int else { return Response(status: .badRequest) }
+                    guard let todoItem = try TodoItem.makeQuery().find(todoItemId) else { return Response(status: .badRequest) }
+                    if (try todoItem.claps.isAttached(user)) {
+                        try todoItem.claps.remove(user)
+                    } else {
+                        try todoItem.claps.add(user)
+                    }
+                    return Response(status: .ok)
                 }
             } catch { return Response(status:.forbidden) }
         }
