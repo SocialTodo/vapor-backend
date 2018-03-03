@@ -74,9 +74,19 @@ extension FacebookUserController: ResourceRepresentable {
         } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
     
+    func show(_ req: Request, _ facebookUser: Model) throws -> ResponseRepresentable {
+        do {
+            return try self.getResponse(req) { user in
+                try updateFriends(user)
+                return try Response(status: Status.ok, body: try facebookUser.todoLists.all().map{try $0.makeNode()}.makeNode(in: nil).converted(to: JSON.self).makeJSON())
+            }
+        } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
+    }
+    
     func makeResource() -> Resource<FacebookUser> {
         return Resource(
-            index: index
+            index: index,
+            show: show
         )
     }
 }

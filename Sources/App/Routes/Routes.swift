@@ -11,36 +11,58 @@ extension Droplet {
         //This should return the user's name, facebook id, user id, and the lists_id they own
         
         //return all friends with friend id, total claps and user's first and last name
-        self.get("api/friends") {
+        /*self.get("api/friends") {
             do {
                 return try facebookUserController.getResponse($0){ user in
-                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                    return try user.facebookFriends.all().makeNode(in: nil).converted(to: JSON.self)
                 }
             } catch { return Response(status:.forbidden) }
-        }
+        }*/
         
-        //Claps or unclaps a todoitem
-        self.post("api/clap") {
-            do {
-                return try facebookUserController.getResponse($0){ user in
-                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
-                }
-            } catch { return Response(status:.forbidden) }
-        }
         
         //return all shared todo lists
+        /*self.get("api/") {
+            do {
+                return try facebookUserController.getResponse($0){ user in
+                    return try user.facebookFriends.all().makeResponse(using: JSONEncoder(), status: .ok)
+                }
+            } catch { return Response(status:.forbidden) }
+        }*/
+        
         self.post("api/clap") { req in
             do {
                 return try facebookUserController.getResponse(req){ user in
                     guard let json = req.json else { return Response(status: .badRequest) }
                     guard let todoItemId = json["clap"]?.int else { return Response(status: .badRequest) }
                     guard let todoItem = try TodoItem.makeQuery().find(todoItemId) else { return Response(status: .badRequest) }
+                    var clapped = false
                     if (try todoItem.claps.isAttached(user)) {
                         try todoItem.claps.remove(user)
+                        guard let listOwner = try todoItem.parentList.get()?.listOwner.get() else { return Response(status: .internalServerError)}
+                        listOwner.claps += 1
+                        try listOwner.save()
+                        clapped = true
                     } else {
                         try todoItem.claps.add(user)
+                        guard let listOwner = try todoItem.parentList.get()?.listOwner.get() else { return Response(status: .internalServerError)}
+                        listOwner.claps -= 1
+                        try listOwner.save()
                     }
-                    return Response(status: .ok)
+                    var return_json = JSON()
+                    try return_json.set("clapped", clapped)
+                    return try Response(status: .ok, json: return_json)
+                }
+            } catch { return Response(status:.forbidden) }
+        }
+        
+        self.get("api/me") {
+            do {
+                return try facebookUserController.getResponse($0){ user in
+                    var json = JSON()
+                    try json.set(FacebookUser.Keys.name, user.name)
+                    try json.set(FacebookUser.Keys.claps, user.claps)
+                    try json.set("friends", user.facebookFriends.count())
+                    return try Response(status: .ok, json: json)
                 }
             } catch { return Response(status:.forbidden) }
         }

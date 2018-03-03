@@ -10,6 +10,7 @@ final class FacebookUser: Model {
     var name: String
     var facebookUserId: Int
     var facebookToken: String
+    var claps: Int
     
     var facebookFriends: Siblings<FacebookUser, FacebookUser, FacebookFriends> {
         return siblings(to: FacebookUser.self, through: FacebookFriends.self, localIdKey: FacebookUser.foreignIdKey + "From", foreignIdKey: FacebookUser.foreignIdKey + "To")
@@ -21,20 +22,23 @@ final class FacebookUser: Model {
     struct Keys {
         static let id = "id"
         static let name = "name"
+        static let claps = "claps"
         static let facebookUserId = "facebookUserId"
         static let facebookToken = "facebookToken"
     }
 
-    init(userId facebookUserId:Int, token facebookToken:String, name:String){
+    init(userId facebookUserId:Int, token facebookToken:String, name:String, claps:Int = 0){
         self.name = name
         self.facebookUserId = facebookUserId
         self.facebookToken = facebookToken
+        self.claps = claps
     }
 
     init(row: Row) throws {
         name = try row.get(Keys.name)
         facebookUserId = try row.get(Keys.facebookUserId)
         facebookToken = try row.get(Keys.facebookToken)
+        claps = try row.get(Keys.claps)
     }
 
     func setFriends(friends friendFacebookUsers:[FacebookUser]) throws {
@@ -48,6 +52,7 @@ final class FacebookUser: Model {
         try row.set(Keys.name, name)
         try row.set(Keys.facebookUserId, facebookUserId)
         try row.set(Keys.facebookToken, facebookToken)
+        try row.set(Keys.claps, claps)
         return row
     }
 
@@ -60,6 +65,7 @@ extension FacebookUser: Preparation {
             $0.int(Keys.facebookUserId, unique: true)
             $0.string(Keys.facebookToken)
             $0.string(Keys.name)
+            $0.int(Keys.claps)
         }
     }
 
@@ -73,7 +79,8 @@ extension FacebookUser: NodeConvertible {
             self.init(
                 userId: node[Keys.facebookUserId]!.int!,
                 token: node[Keys.facebookToken]!.string!,
-                name: node[Keys.name]!.string!
+                name: node[Keys.name]!.string!,
+                claps: node[Keys.claps]!.int!
             )
     }
 
@@ -84,7 +91,8 @@ extension FacebookUser: NodeConvertible {
                 Keys.id: id as Any,
                 Keys.name: name,
                 Keys.facebookUserId: facebookUserId,
-                Keys.facebookToken: facebookToken
+                Keys.facebookToken: facebookToken,
+                Keys.claps: claps
             ]
         )
     }
@@ -96,7 +104,8 @@ extension FacebookUser: ResponseRepresentable {
         try json.set("id", id!)
         try json.set(Keys.facebookUserId, facebookUserId)
         try json.set(Keys.name, name)
-        try json.set("lists", try todoLists.all().map{try $0.makeNode()})
+        try json.set(Keys.claps, claps)
+        //try json.set("lists", try todoLists.all().map{try $0.makeNode()})
         return try json.makeResponse()
     }
 }
