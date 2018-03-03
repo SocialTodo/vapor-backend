@@ -21,7 +21,7 @@ final class FacebookUserController {
     }
     
     private func cachedLogin(userId facebookUserId:Int, token facebookToken:String) throws -> FacebookUser? {
-        if let queriedUser = try FacebookUser.makeQuery().filter("facebookUserId", .equals, facebookUserId).first(), queriedUser.facebookToken == facebookToken {
+        if let queriedUser = try FacebookUser.makeQuery().filter(FacebookUser.Keys.facebookUserId, .equals, facebookUserId).first(), queriedUser.facebookToken == facebookToken {
             return queriedUser
         } else {
             return nil
@@ -31,7 +31,7 @@ final class FacebookUserController {
     private func graphApiLogin(userId facebookUserId:Int, token facebookToken:String) throws -> FacebookUser? {
         let response = drop.authenticate(userId: facebookUserId, token: facebookToken)
         if response?.valid ?? false {
-            if let query = try FacebookUser.makeQuery().filter("facebookUserId", .equals, facebookUserId).first() {
+            if let query = try FacebookUser.makeQuery().filter(FacebookUser.Keys.facebookUserId, .equals, facebookUserId).first() {
                 return query
             } else {
                 let profile = drop.userProfile(userId: facebookUserId, token: facebookToken)

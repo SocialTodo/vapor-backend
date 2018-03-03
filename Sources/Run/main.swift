@@ -3,7 +3,7 @@ import PostgreSQLProvider
 
 let config = try Config()
 do {
-//    try config.addProvider(PostgreSQLProvider.Provider.self)
+    try config.addProvider(PostgreSQLProvider.Provider.self)
     try config.setup()
 } catch {
     print(error)
