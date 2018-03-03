@@ -59,9 +59,11 @@ extension Droplet {
             do {
                 return try facebookUserController.getResponse($0){ user in
                     var json = JSON()
+                    try json.set(FacebookUser.Keys.id, user.id!)
                     try json.set(FacebookUser.Keys.name, user.name)
                     try json.set(FacebookUser.Keys.claps, user.claps)
                     try json.set("friends", user.facebookFriends.count())
+                    try json.set(FacebookUser.Keys.facebookUserId, user.facebookUserId)
                     return try Response(status: .ok, json: json)
                 }
             } catch { return Response(status:.forbidden) }
