@@ -30,7 +30,12 @@ extension TodoItemController: ResourceRepresentable {
     func show(_ req: Request, _ todoItem: Model) throws -> ResponseRepresentable {
         do {
             return try userController.getResponse(req) { user in
-                return try todoItem.makeNode().converted(to: JSON.self)
+                var json = try todoItem.makeNode().converted(to: JSON.self)
+                let listOwner = try todoItem.parentList.get()!.listOwner.get()!.id!
+                if (user.id! == listOwner) {
+                    try json.set("claped", todoItem.claps.isAttached(user))
+                }
+                return json
             }
         } catch { drop.log.error(error); return Response(status: Status.internalServerError)}
     }
