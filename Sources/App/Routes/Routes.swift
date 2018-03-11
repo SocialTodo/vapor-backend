@@ -7,6 +7,10 @@ extension Droplet {
         let todoItemController = TodoItemController(droplet: self, userController: facebookUserController)
         let todoListController = TodoListController(droplet: self, userController: facebookUserController)
         
+        self.get("/") { _ in return Response(status:.notFound)}
+        self.post("/") { _ in return Response(status:.notFound)}
+        self.options("/") { _ in return Response(status:.notFound)}
+        
         //Entry point for the application
         //This should return the user's name, facebook id, user id, and the lists_id they own
         
@@ -55,9 +59,9 @@ extension Droplet {
             } catch { return Response(status:.forbidden) }
         }
         
-        self.get("api/me") {
+        self.get("api/me") { req in
             do {
-                return try facebookUserController.getResponse($0){ user in
+                return try facebookUserController.getResponse(req){ user in
                     var json = JSON()
                     try json.set(FacebookUser.Keys.id, user.id!)
                     try json.set(FacebookUser.Keys.name, user.name)
