@@ -3,15 +3,15 @@ services:
   socialtodo:
     build: .
     ports:
-    - "8080:8080"
+    - "127.0.0.1:8080:8080"
     env_file:
     - ../secrets.env
     links:
     - db
   db:
     image: postgres
-    ports:
-      - "5432:5432"
+    expose:
+      - "5432"
     environment:
       POSTGRES_PASSWORD: dolphins
       POSTGRES_DB: socialtodo
