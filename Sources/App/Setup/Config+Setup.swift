@@ -1,4 +1,4 @@
-import FluentProvider
+import Fluent
 
 extension Config {
     public func setup() throws {

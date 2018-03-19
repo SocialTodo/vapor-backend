@@ -1,5 +1,5 @@
 import Vapor
-import FluentProvider
+import Fluent
 
 final class FacebookFriends: PivotProtocol, Entity {
     var storage = Storage()

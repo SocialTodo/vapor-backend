@@ -2,10 +2,10 @@ import Vapor
 import HTTP
 
 final class FacebookUserController {
-    let drop: Droplet
+    let router: Router
 
-    init(droplet: Droplet){
-        drop = droplet
+    init(_ router:Router){
+        self.router = router
     }
     
     //Mark: Authentication stuff
@@ -29,7 +29,7 @@ final class FacebookUserController {
     }
     
     private func graphApiLogin(userId facebookUserId:Int, token facebookToken:String) throws -> FacebookUser? {
-        let response = drop.authenticate(userId: facebookUserId, token: facebookToken)
+        let response = .authenticate(userId: facebookUserId, token: facebookToken)
         if response?.valid ?? false {
             if let query = try FacebookUser.makeQuery().filter(FacebookUser.Keys.facebookUserId, .equals, facebookUserId).first() {
                 return query

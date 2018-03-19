@@ -1,5 +1,5 @@
 import Vapor
-import FluentProvider
+import Fluent
 import HTTP
 
 final class TodoItem: Model {

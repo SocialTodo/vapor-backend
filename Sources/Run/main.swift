@@ -1,21 +1,25 @@
-import App
-import PostgreSQLProvider
+import Service
+import Vapor
+import Foundation
 
-let config = try Config()
+// The contents of main are wrapped in a do/catch block because any errors that get raised to the top level will crash Xcode
 do {
-    try config.addProvider(PostgreSQLProvider.Provider.self)
-    try config.setup()
+    var config = Config.default()
+    var env = try Environment.detect()
+    var services = Services.default()
+    
+    try App.configure(&config, &env, &services)
+    
+    let app = try Application(
+        config: config,
+        environment: env,
+        services: services
+    )
+    
+    try App.boot(app)
+    
+    try app.run()
 } catch {
     print(error)
+    exit(1)
 }
-
-public let drop = try Droplet(config)
-
-do {
-    try drop.setup()
-
-    try drop.run()
-} catch {
-    print(error)
-}
-
